@@ -1,13 +1,14 @@
 /*
  ============================================================================
- Name        : 002-c-singleLinkedList.c
+ Name        : 003-c-sigleCircularLinkedList.c
  Author      : Carlos Martinez
  Version     :
  Copyright   : Your copyright notice
- Description : Single Linked List, Ansi-style
+ Description : Single circular linked list in C, Ansi-style
+               This list has the difference with single linked list that the
+               last member of the list points to the first member.
  ============================================================================
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -25,7 +26,7 @@ typedef struct
 typedef struct
 {
 	void* nodeData; /*Holds data stored in the node*/
-	void* next;     /*Points to next node*/
+	void* next;     /*Points to next node, */
 }Node;
 
 /*Generic data struct to be added to the linked list */
@@ -45,6 +46,7 @@ static void delNodefromListIndex (singleLinkedList* list, unsigned int index); /
 static void deleteList (singleLinkedList* list); /*Deletes a complete list and all its nodes*/
 static void addDatatoNode (Node* node, Data* data); /*Add generic data to one Node*/
 static Data* getNodeData (Node* node); /*Returns date from node*/
+
 
 int main(void) {
 	singleLinkedList* testList = NULL;
@@ -73,17 +75,14 @@ int main(void) {
 	addDatatoNode(node3,&c);
 	addDatatoNode(node4,&d);
 	addDatatoNode(node5,&e);
-	addNodetoList(testList,node1);
-	addNodetoList(testList,node2);
-	addNodetoList(testList,node3);
-	addNodetoList(testList,node4);
-	addNodetoListIndex(testList,node5,5u);
-	delNodefromList(testList,node3);
-	delNodefromListIndex(testList,3);
-	arrSize = getNodeListNumber(testList);
-	deleteList(testList);
+	addNodetoListIndex(testList,node1,1);
+	addNodetoListIndex(testList,node2,2);
+	addNodetoListIndex(testList,node3,3);
+	addNodetoListIndex(testList,node4,4);
+	addNodetoListIndex(testList,node5,4);
 	return EXIT_SUCCESS;
 }
+
 
 static singleLinkedList* createList (void)
 {
@@ -111,6 +110,7 @@ static Node* createNode (void)
 static unsigned int getNodeListNumber (singleLinkedList* list)
 {
 	Node* auxNode = NULL;
+	Node* fstNode = NULL;
 	unsigned int nodeCtr = 0u;
 	if(NULL != list)
 	{
@@ -118,7 +118,8 @@ static unsigned int getNodeListNumber (singleLinkedList* list)
 		{
 			nodeCtr = nodeCtr + 1u;
 			auxNode = list->firstNode;
-			while(NULL != auxNode->next)
+			fstNode = list->firstNode;
+			while(fstNode != auxNode->next)
 			{
 				auxNode = auxNode->next;
 				nodeCtr = nodeCtr + 1u;
@@ -135,9 +136,11 @@ static unsigned int getNodeListNumber (singleLinkedList* list)
 	return nodeCtr;
 }
 
+
 static void addNodetoList (singleLinkedList* list, Node* node)
 {
 	Node* auxNode = NULL;
+	Node* fstNode = NULL;
 	if(NULL != list)
 	{
 		if(NULL != node)
@@ -145,14 +148,18 @@ static void addNodetoList (singleLinkedList* list, Node* node)
 			if(NULL != list->firstNode)
 			{
 				auxNode = list->firstNode;
-				while(NULL != auxNode->next)
+				fstNode = list->firstNode;
+				while(fstNode != auxNode->next)
 				{
 					auxNode = auxNode->next;
 				}
+				node->next = fstNode;
 				auxNode->next = node;
 			}else
 			{
 				list->firstNode = node;
+				auxNode = list->firstNode;
+				auxNode->next = list->firstNode;
 			}
 		}else
 		{
@@ -167,6 +174,7 @@ static void addNodetoList (singleLinkedList* list, Node* node)
 static void addNodetoListIndex (singleLinkedList* list, Node* node, unsigned int index)
 {
 	Node* auxNode = NULL;
+	Node* fstNode = NULL;
 	unsigned int listNodes = getNodeListNumber(list);
 	unsigned int nodeCtr = 0u;
 	if(NULL != list)
@@ -175,19 +183,22 @@ static void addNodetoListIndex (singleLinkedList* list, Node* node, unsigned int
 		{
 			if(NULL != list->firstNode)
 			{
-				if(1 >= index)
+				auxNode = list->firstNode;
+				fstNode = list->firstNode;
+				if(1u >= index)
 				{
-						node->next = list->firstNode;
-						list->firstNode = node;
+					node->next = list->firstNode;
+					list->firstNode = node;
+					auxNode->next = list->firstNode;
 				}else
 				{
-					auxNode = list->firstNode;
 					if(index > listNodes)
 					{
-						while(NULL != auxNode->next)
+						while(fstNode != auxNode->next)
 						{
 							auxNode = auxNode->next;
 						}
+						node->next = fstNode;
 						auxNode->next = node;
 					}else
 					{
@@ -202,6 +213,8 @@ static void addNodetoListIndex (singleLinkedList* list, Node* node, unsigned int
 			}else
 			{
 				list->firstNode = node;
+				auxNode = list->firstNode;
+				auxNode->next = list->firstNode;
 			}
 		}else
 		{
@@ -219,7 +232,7 @@ static void delNodefromList (singleLinkedList* list, Node* node)
 	unsigned int nodeCtr = 0u;
 	unsigned int listNodes = getNodeListNumber(list);
 	if(NULL != list)
- 	{
+	{
 		if(NULL != node)
 		{
 			if(NULL != list->firstNode)
@@ -258,66 +271,6 @@ static void delNodefromList (singleLinkedList* list, Node* node)
 	}
 }
 
-static void delNodefromListIndex (singleLinkedList* list, unsigned int index)
-{
-	Node* auxNode = NULL;
-	Node* rmvNode = NULL;
-	unsigned int listNodes = getNodeListNumber(list);
-	unsigned int nodeCtr = 0u;
-	if(NULL != list)
-	{
-		if(NULL != list->firstNode)
-		{
-			if(1 >= index)
-			{
-				rmvNode = list->firstNode;
-				auxNode = list->firstNode;
-				auxNode = auxNode->next;
-				list->firstNode = auxNode;
-				free(rmvNode);
-			}else
-			{
-				auxNode = list->firstNode;
-				if(index >= listNodes)
-				{
-					for(nodeCtr = 2u; nodeCtr < listNodes; nodeCtr++)
-					{
-						auxNode = auxNode->next;
-					}
-					rmvNode = auxNode->next;
-					auxNode->next = NULL;
-					free(rmvNode);
-				}else
-				{
-					for(nodeCtr = 2u; nodeCtr < index; nodeCtr++)
-					{
-						auxNode = auxNode->next;
-					}
-					rmvNode = auxNode->next;
-					auxNode->next = rmvNode->next;
-					free(rmvNode);
-				}
-			}
-		}else
-		{
-			/*Do nothing*/
-		}
-	}else
-	{
-		/*Do nothing*/
-	}
-}
-
-static void deleteList (singleLinkedList* list)
-{
-	unsigned int listNodes = getNodeListNumber(list);
-	unsigned int nodeCtr = 0u;
-	for(nodeCtr = listNodes;0u < nodeCtr;nodeCtr--)
-	{
-		delNodefromListIndex(list,nodeCtr);
-	}
-	free(list);
-}
 
 static void addDatatoNode (Node* node, Data* data)
 {
@@ -328,17 +281,4 @@ static void addDatatoNode (Node* node, Data* data)
 	{
 		/*Do nothing*/
 	}
-}
-
-static Data* getNodeData (Node* node)
-{
-	Data* data = NULL;
-	if(NULL != node)
-	{
-		data = node->nodeData;
-	}else
-	{
-		/*Do nothing*/
-	}
-	return data;
 }
